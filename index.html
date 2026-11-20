@@ -76,7 +76,7 @@ const M={g:[1000,"kg"],ml:[1000,"L"]},lab=u=>(M[u]||[1,u])[1],fd=d=>(d||"").spli
 const up=h=>{const q=Number(h.qty),price=Number(h.price);if(!q||!price)return null;return{v:price/q*(M[h.unit]||[1])[0],l:lab(h.unit)}};
 const U=o=>o?R(o.v)+"/"+o.l:"";
 const md=$("#md");
-let scannerStream=null,scannerTimer=null,scannerReader=null,scannerActive=false;
+let scannerStream=null,scannerTimer=null,scannerReader=null,scannerActive=false,scanRun=0;
 
 const prods=()=>{const m={};S.hist.forEach(h=>m[h.code]=h);return Object.values(m)};
 const find=(code,name)=>S.hist.filter(h=>code?h.code===code:name&&h.name.toLowerCase()===name.toLowerCase());
@@ -143,7 +143,9 @@ async function loadZXing(){
  if(window.ZXing?.BrowserMultiFormatReader)return window.ZXing;
  const sources=[
   "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/zxing-browser.min.js",
-  "https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"
+  "https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js",
+  "https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js",
+  "https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"
  ];
  let lastError;
  for(const src of sources){
@@ -167,9 +169,13 @@ async function scan(target="reg"){
   if(!window.isSecureContext)throw new Error("A câmera exige uma conexão segura. Abra o aplicativo pelo endereço HTTPS do GitHub Pages.");
   if(!navigator.mediaDevices?.getUserMedia)throw new Error("Este navegador não disponibiliza acesso à câmera. Tente abrir o Suupaa no Chrome ou Safari atualizado.");
   if(target==="product"){$("#md").classList.add("product-editor");box.innerHTML='<video id="prodVd" playsinline muted autoplay></video><div class="scan-hint" id="prodScanHint">Aponte a câmera para o código de barras. Mantenha o código inteiro visível e aproxime ou afaste até focar.</div><button class="btn o" type="button" onclick="stopScan()">Fechar leitor e voltar ao cadastro</button>';video=$("#prodVd")}
+  if(target!=="product"){box.innerHTML='<video id="vd" playsinline muted autoplay></video><div class="scan-hint" id="regScanHint">Leitor ativo: mantenha o código inteiro visível e ajuste a distância até focar.</div><button class="btn o" type="button" onclick="stopScan()">Fechar leitor</button>';video=$("#vd");try{box.scrollIntoView({block:"nearest"})}catch(_){}}
+  const myRun=++scanRun;
   box.hidden=false;scannerActive=true;
   scannerStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"},width:{ideal:1920},height:{ideal:1080},focusMode:{ideal:"continuous"}},audio:false});
-  video.srcObject=scannerStream;await video.play();
+  if(target!=="product"&&myRun!==scanRun){scannerStream.getTracks().forEach(t=>t.stop());return}
+  video.srcObject=scannerStream;
+  if(target==="product"){await video.play()}else{try{await video.play()}catch(pe){if(pe&&pe.name!=="AbortError")throw pe}if(myRun!==scanRun)return}
   const handleCode=(raw)=>{
    const code=clean(raw);if(!code)return;
    stopScan();
@@ -189,11 +195,12 @@ async function scan(target="reg"){
    const tick=async()=>{if(!scannerActive)return;try{const codes=await detector.detect(video);if(codes?.length){handleCode(codes[0].rawValue);return}}catch(e){const hint=$("#prodScanHint");if(hint)hint.textContent="Não consegui analisar esta imagem. Ajuste a distância e mantenha o código bem iluminado."}scannerTimer=setTimeout(tick,220)};tick();return;
   }
   const ZX=await loadZXing();const Reader=ZX?.BrowserMultiFormatReader;if(!Reader)throw new Error("Leitor não disponível neste navegador.");
+  if(target!=="product"&&myRun!==scanRun)return;
   scannerReader=new Reader();
   await scannerReader.decodeFromVideoDevice(undefined,video,(result,err)=>{if(result)handleCode(result.getText())});
- }catch(e){stopScan();alert(e.message||"Não foi possível acessar a câmera. Confira a permissão do navegador e tente novamente.")}
+ }catch(e){if(target!=="product"&&e&&e.name==="AbortError")return;stopScan();alert(e.message||"Não foi possível acessar a câmera. Confira a permissão do navegador e tente novamente.")}
 }
-function stopScan(){scannerActive=false;if(scannerTimer){clearTimeout(scannerTimer);scannerTimer=null}if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}if(scannerReader){try{scannerReader.reset()}catch(e){}scannerReader=null}["#vd","#prodVd"].forEach(sel=>{const v=$(sel);if(v){v.pause?.();v.srcObject=null}});["#scannerBox","#prodScannerBox"].forEach(sel=>{const b=$(sel);if(b)b.hidden=true})}
+function stopScan(){scanRun++;scannerActive=false;if(scannerTimer){clearTimeout(scannerTimer);scannerTimer=null}if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}if(scannerReader){try{scannerReader.reset()}catch(e){}scannerReader=null}["#vd","#prodVd"].forEach(sel=>{const v=$(sel);if(v){v.pause?.();v.srcObject=null}});["#scannerBox","#prodScannerBox"].forEach(sel=>{const b=$(sel);if(b)b.hidden=true})}
 function escHTML(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 function productForm(code=""){
  stopScan();const p=code?productByCode(code):null;$("#md").classList.add("product-editor");
