@@ -160,7 +160,7 @@ async function loadZXing(){
  throw new Error("Não foi possível carregar o leitor. Verifique a conexão com a internet e tente novamente. Se estiver no celular, abra o Suupaa pelo link HTTPS do GitHub Pages.");
 }
 async function scan(target="reg"){
- const box=target==="product"?$("#prodScannerBox"):$("#scannerBox"),video=target==="product"?$("#prodVd"):$("#vd");if(!box||!video)return;
+ const box=target==="product"?$("#prodScannerBox"):$("#scannerBox");let video=target==="product"?$("#prodVd"):$("#vd");if(!box||!video)return;
  try{
   stopScan();
   if(!window.isSecureContext)throw new Error("A câmera exige uma conexão segura. Abra o aplicativo pelo endereço HTTPS do GitHub Pages.");
