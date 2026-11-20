@@ -118,7 +118,7 @@ function p1(){
  const opts=S.products.slice().sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));
  $("#p1").innerHTML=`<h1>Registrar preço</h1>
  <div class="c"><b>1. Encontre o produto</b>
- <div class="row"><input class="f" id="regSearch" placeholder="Código de barras ou nome do produto" oninput="searchRegProducts()"><button class="btn o" style="flex:none;width:auto" onclick="scan()">▥ Ler código</button></div>
+ <div class="row"><input class="f" id="regSearch" placeholder="Código de barras ou nome do produto" oninput="searchRegProducts()"><button class="btn o" type="button" style="flex:none;width:auto;padding:10px 13px" onclick="clearRegSearch()" aria-label="Limpar busca">✕</button><button class="btn o" type="button" style="flex:none;width:auto" onclick="scan()">▥ Ler código</button></div>
  <div id="regResults" class="mut">Digite o nome ou código, ou use a câmera. Cadastre o produto na aba Produtos se ainda não existir.</div>
  <div id="selectedProduct"></div></div>
  <div class="c"><b>2. Dados da pesquisa</b><label class="mut" for="regPrice">Preço encontrado</label><input class="f" id="regPrice" type="number" step="0.01" min="0.01" placeholder="R$ 0,00" inputmode="decimal">
@@ -131,6 +131,7 @@ function p1(){
  if(regSelectedCode)selectProduct(regSelectedCode);
 }
 let regSelectedCode="",pricePhoto="";
+function clearRegSearch(){const input=$("#regSearch");if(input)input.value="";regSelectedCode="";const selected=$("#selectedProduct");if(selected)selected.innerHTML="";const results=$("#regResults");if(results)results.innerHTML="Digite o nome ou código, ou use a câmera. Cadastre o produto na aba Produtos se ainda não existir.";}
 function searchRegProducts(){const q=$("#regSearch").value;const found=productNameMatches(q).slice(0,12);$("#regResults").innerHTML=found.map(p=>`<div class="li" onclick="selectProduct('${String(p.code).replace(/'/g,"\\'")}')" style="cursor:pointer">${im(p.photo)}<span><b>${p.name}</b><small>${p.brand||""} · ${p.shelf||""} · ${p.qty||""}${p.unit||""}</small></span><small>Selecionar ›</small></div>`).join("")||'<div class="mut">Nenhum produto encontrado. Cadastre-o na aba Produtos.</div>'}
 function selectProduct(code){const p=productByCode(code);if(!p){regSelectedCode="";return}regSelectedCode=p.code;$("#selectedProduct").innerHTML=`<div class="li">${im(p.photo)}<span><b>${p.name}</b><small>${p.brand||""} · ${p.qty||""}${p.unit||""} · ${p.shelf||""}</small></span><button class="chip" onclick="clearSelectedProduct()">Trocar</button></div>`;$("#regResults").innerHTML="Produto selecionado."}
 function clearSelectedProduct(){regSelectedCode="";$("#selectedProduct").innerHTML="";searchRegProducts()}
@@ -178,7 +179,10 @@ async function scan(target="reg"){
     if(status)status.innerHTML=existing?'<div class="stat">Código lido: <b>'+code+'</b>. Este produto já está cadastrado como <b>'+existing.name+'</b>.</div>':'<div class="stat">Código lido com sucesso: <b>'+code+'</b>. Produto novo! Preencha os dados abaixo e salve o cadastro.</div>';
     return;
    }
-   $("#regSearch").value=code;searchRegProducts();const product=productByCode(code);if(product)selectProduct(product.code);else $("#regResults").innerHTML='<div class="stat">Código lido: <b>'+code+'</b>. Produto ainda não cadastrado. Cadastre-o na aba Produtos.</div>';
+   const input=$("#regSearch");if(input)input.value="";
+   const product=productByCode(code);
+   if(product){selectProduct(product.code);}
+   else{regSelectedCode="";const selected=$("#selectedProduct");if(selected)selected.innerHTML="";$("#regResults").innerHTML='<div class="stat">Código lido: <b>'+code+'</b>. Produto ainda não cadastrado. Cadastre-o na aba Produtos.</div>';}
   };
   if("BarcodeDetector" in window){
    let detector;try{detector=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e","code_128","code_39","itf"]})}catch{detector=new BarcodeDetector()}
