@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Suupaa スーパー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D6402B"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Suupaa"><link rel="apple-touch-icon" id="ic"><link rel="icon" id="ic2">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6E7B4;--card:#FFFBEA;--ink:#2B2118;--mut:#7a6a55;--red:#D6402B;--grn:#2F7D4F;--ylw:#F2B632;--line:#e3d29a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1a14;--card:#2a251b;--ink:#f6e7b4;--mut:#b9a982;--line:#463d28}}
+:root[data-theme="dark"]{--bg:#1d1a14;--card:#2a251b;--ink:#f6e7b4;--mut:#b9a982;--line:#463d28}
+html,body{height:100%;margin:0}*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:Fredoka,system-ui,sans-serif;font-size:var(--fs,16px);display:flex;flex-direction:column;overflow:hidden}
+.awn{height:26px;flex:none;background:repeating-linear-gradient(90deg,var(--red) 0 28px,#fff7dc 28px 56px);position:relative;margin-bottom:10px}
+.awn:after{content:"";position:absolute;left:0;right:0;top:100%;height:10px;background:radial-gradient(circle at 14px 0,var(--red) 13px,transparent 14px) 0 0/56px 10px,radial-gradient(circle at 42px 0,#fff7dc 13px,transparent 14px) 0 0/56px 10px}
+.bar{display:flex;gap:8px;padding:6px 14px 8px;font-size:.78em;color:var(--mut);align-items:center;flex-wrap:wrap}
+.bar b{color:var(--ink)}.bar input{font:inherit;font-size:1em;border:0;background:transparent;color:var(--mut);width:118px}
+.track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;min-height:0}
+.track::-webkit-scrollbar{display:none}
+section{flex:none;width:100%;scroll-snap-align:center;overflow-y:auto;padding:6px 16px 20px;transition:transform .3s,opacity .3s}
+section.off{transform:scale(.93);opacity:.55}
+h1{font-size:1.7em;line-height:1.1;margin:4px 0 6px}h2{font-size:1.15em;margin:16px 0 8px}
+.c{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;margin:10px 0}
+input,select,button{font:inherit;color:var(--ink)}
+.f{width:100%;padding:9px 11px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin:3px 0}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.btn{background:var(--red);color:#fff;border:0;border-radius:14px;padding:11px 14px;font-weight:600;cursor:pointer;width:100%;margin-top:6px}
+.btn.g{background:var(--grn)}.btn.o{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.li{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px dashed var(--line);transition:all .35s}
+.li.gone{opacity:0;transform:translateX(40px);height:0;padding:0;overflow:hidden}
+.li input{width:22px;height:22px;accent-color:var(--grn)}.li span{flex:1}.li small,.mut{color:var(--mut)}
+.stat{background:var(--ylw);color:#2B2118;border-radius:14px;padding:10px 12px;margin-top:10px;cursor:pointer;font-size:.9em}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0}.chip{flex:none;padding:6px 12px;border-radius:99px;border:2px solid var(--line);background:var(--card);cursor:pointer}.chip.on{background:var(--grn);color:#fff;border-color:var(--grn)}
+nav{flex:none;display:flex;justify-content:space-around;background:var(--card);border-top:3px solid var(--line);padding:6px 4px 8px}
+nav button{background:none;border:0;display:flex;flex-direction:column;align-items:center;font-size:.72em;color:var(--mut);cursor:pointer;gap:2px;padding:4px 10px;border-radius:12px}
+nav button i{font-style:normal;font-size:1.7em}nav button.on{color:var(--ink);background:var(--ylw)}
+.mod{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:9;padding:20px}.mod.on{display:flex}
+.mod div{background:var(--card);border-radius:20px;padding:16px;width:100%;max-width:420px}
+.th{width:46px;height:46px;border-radius:12px;object-fit:cover;flex:none;background:var(--line);display:flex;align-items:center;justify-content:center}
+#ph{width:64px;height:64px}
+.tot{font-size:1.6em;font-weight:600;color:var(--red)}
+</style></head><body>
+<div class="awn"></div>
+<div class="bar"><span>📅 <input type="date" id="dt"></span><span>🏪 <b id="mk"></b></span></div>
+<div class="track" id="tr">
+<section id="p0"></section><section id="p1"></section><section id="p2"></section><section id="p3"></section>
+</div>
+<nav id="nv"></nav>
+<div class="mod" id="md"><div id="mb"></div></div>
+<script>
+const $=s=>document.querySelector(s),R=v=>"R$ "+(+v||0).toFixed(2).replace(".",","),T=new Date().toISOString().slice(0,10);
+let S={user:"",market:"",city:"",theme:"auto",fs:16,hist:[],list:[],cart:[]};
+try{Object.assign(S,JSON.parse(localStorage.getItem("suupaa")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("suupaa",JSON.stringify(S))}catch(e){}};
+let date=T,F={shelf:"Todos",mk:"",q:"",mo:""},cur={};
+const SH=["Hortifruti","Frios","Padaria","Açougue","Congelados","Geladeira","Limpeza","Higiene","Bebidas","Snacks","Grãos e farinhas","Outros"];
+const clean=s=>s.replace(/[^A-Za-z0-9]/g,"").slice(0,20);
+const prods=()=>{const m={};S.hist.forEach(h=>m[h.code]=h);return Object.values(m)};
+const find=(code,name)=>S.hist.filter(h=>code?h.code===code:name&&h.name.toLowerCase()===name.toLowerCase());
+const last=t=>{const l=S.hist.filter(h=>h.name.toLowerCase().includes(t.toLowerCase()));return l.length?l[l.length-1]:null};
+function top(){$("#mk").textContent=S.market?S.market+(S.city?" · "+S.city:""):"escolha o mercado";$("#dt").value=date;
+document.documentElement.dataset.theme=S.theme;document.documentElement.style.setProperty("--fs",S.fs+"px")}
+$("#dt").onchange=e=>{date=e.target.value||T};
+const long=new Date().toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric"});
+function p0(){const h=new Date().getHours(),g=h<12?"Bom dia":h<18?"Boa tarde":"Boa noite";
+const est=S.list.filter(i=>!i.done).reduce((a,i)=>a+((last(i.t)||{}).price||0),0);
+$("#p0").innerHTML=`<h1>${g}, ${S.user||"feirante"}!</h1><div class="mut">Hoje é dia ${long}.</div>
+<div class="c"><b>Em que mercado você está?</b>
+<input class="f" id="m1" placeholder="Ex.: Assaí Presidente Vargas" value="${S.market}">
+<input class="f" id="m2" placeholder="Cidade" value="${S.city}">
+<button class="btn g" onclick="S.market=m1.value;S.city=m2.value;save();top()">Confirmar mercado</button></div>
+<h2>🧺 Lista de compras</h2><div class="c"><div id="ls">${S.list.map((i,n)=>`<div class="li ${i.done?"gone":""}"><input type="checkbox" ${i.done?"checked":""} onchange="tick(${n},this)"><span>${i.t}</span><small>${last(i.t)?R(last(i.t).price):""}</small></div>`).join("")||'<div class="mut">Lista vazia. Adicione o primeiro item.</div>'}</div>
+<div class="row"><input class="f" id="ni" placeholder="Novo item"><button class="btn" style="flex:none;width:auto" onclick="addL()">+</button></div>
+<div class="mut" style="margin-top:8px">Estimativa pelo histórico: <b class="tot" style="font-size:1.1em">${R(est)}</b></div></div>`}
+function tick(n,el){S.list[n].done=true;el.parentNode.classList.add("gone");setTimeout(()=>{S.list=S.list.filter(i=>!i.done);save();p0()},380);save()}
+function addL(){const v=$("#ni").value.trim();if(v){S.list.push({t:v,done:false});save();p0()}}
+function p1(){$("#p1").innerHTML=`<h1>Registrar produto</h1>
+<div class="row"><input class="f" id="cd" placeholder="Código (barras ou seu)" oninput="this.value=clean(this.value);lk()"><button class="btn o" style="flex:none;width:auto" onclick="scan()">📷</button></div>
+<div class="row" style="align-items:center"><label class="btn o" style="flex:none;width:auto;margin:3px 0">📸 Foto do produto<input type="file" accept="image/*" capture="environment" hidden onchange="foto(this)"></label><img id="ph" class="th" style="display:none"></div>
+<video id="vd" style="display:none;width:100%;border-radius:14px" playsinline muted></video>
+<input class="f" id="nm" placeholder="Item (ex.: Molho de tomate)" oninput="lk()">
+<div class="row"><input class="f" id="br" placeholder="Marca"><select class="f" id="sh">${SH.map(s=>`<option>${s}</option>`).join("")}</select></div>
+<div class="row"><input class="f" id="qt" oninput="lk()" type="number" placeholder="Qtd (itens)" inputmode="decimal"><select class="f" id="un" onchange="lk()"><option>g</option><option>kg</option><option>ml</option><option>L</option><option>un</option><option>rolo</option><option>m</option><option>folha</option></select><input class="f" id="pr" oninput="lk()" type="number" step="0.01" placeholder="R$" inputmode="decimal"></div>
+<div class="row"><button class="btn" onclick="reg(0)">Salvar</button><button class="btn g" onclick="reg(1)">Salvar + carrinho</button></div>
+<div id="st"></div>`}
+let PH="";const im=p=>p?`<img class="th" src="${p}">`:'<div class="th">🧺</div>';
+function setPh(d){PH=d||"";const e=$("#ph");e.src=PH;e.style.display=PH?"block":"none"}
+function foto(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const s=Math.min(1,200/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);setPh(c.toDataURL("image/jpeg",.6))};i.src=r.result};r.readAsDataURL(f);el.value=""}
+const M={g:[1000,"kg"],ml:[1000,"L"]},lab=u=>(M[u]||[1,u])[1],fd=d=>d.split("-").reverse().join("/");
+const up=h=>{const q=+h.qty,p=+h.price;if(!q||!p)return null;return{v:p/q*(M[h.unit]||[1])[0],l:lab(h.unit)}},U=o=>R(o.v)+"/"+o.l;
+function lk(){const c=$("#cd").value,n=$("#nm").value,l=find(c,n);const o=document.activeElement;
+if(l.length&&c&&o.id==="cd"){const x=l[l.length-1];nm.value=x.name;br.value=x.brand;qt.value=x.qty;un.value=x.unit;sh.value=x.shelf;setPh(x.photo)}
+cur=l;const s=$("#st"),pv=up({price:+pr.value,qty:qt.value,unit:un.value}),pt=pv?`<div class="stat" style="background:var(--grn);color:#fff;cursor:default">Este produto: <b>${U(pv)}</b></div>`:"",nl=n?S.hist.filter(h=>h.name.toLowerCase()===n.toLowerCase()&&up(h)&&up(h).l===lab(un.value)):[],bu=nl.length?nl.reduce((a,b)=>up(b).v<up(a).v?b:a):null,bt=bu?`<div class="stat" style="cursor:default">🥇 Melhor custo: <b>${bu.brand||"?"}</b> a ${U(up(bu))} em ${bu.market||"?"}, ${fd(bu.date)}</div>`:"";if(!l.length){s.innerHTML=pt+bt;return}
+const m=l.reduce((a,b)=>b.price<a.price?b:a),mo=l.filter(h=>h.date.slice(0,7)===T.slice(0,7)),av=(mo.length?mo:l).reduce((a,b)=>a+b.price,0)/(mo.length||l.length);
+s.innerHTML=pt+bt+`<div class="stat" onclick="chart()">🏷️ Menor: <b>${R(m.price)}</b> em ${m.market||"?"}, ${m.date.split("-").reverse().join("/")}<br>Média ${mo.length?"do mês":"geral"}: <b>${R(av)}</b> · toque para ver o gráfico</div>`}
+function reg(c){const v={code:clean($("#cd").value)||("X"+Date.now().toString(36).toUpperCase()),name:nm.value.trim(),brand:br.value.trim(),qty:qt.value,unit:un.value,shelf:sh.value,price:+pr.value,market:S.market,city:S.city,date,photo:PH||(cur.length?cur[cur.length-1].photo:"")};
+if(!v.name||!v.price){alert("Preencha item e preço.");return}
+S.hist.push(v);if(c)S.cart.push({...v,q:1});save();["cd","nm","br","qt","pr"].forEach(i=>$("#"+i).value="");setPh("");$("#st").innerHTML='<div class="stat">Salvo! ✔</div>';p2();p3()}
+function chart(){const l=[...cur].sort((a,b)=>a.date<b.date?-1:1),mx=Math.max(...l.map(h=>h.price)),mn=Math.min(...l.map(h=>h.price)),r=mx-mn||1;
+const pts=l.map((h,i)=>[20+i*(260/Math.max(l.length-1,1)),110-((h.price-mn)/r)*90]);
+$("#mb").innerHTML=`<b>${l[0].name} · histórico de preços</b><svg viewBox="0 0 300 130" style="width:100%"><polyline fill="none" stroke="var(--red)" stroke-width="3" points="${pts.map(p=>p.join(",")).join(" ")}"/>${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--grn)"/><text x="${p[0]}" y="${p[1]-8}" font-size="9" text-anchor="middle" fill="var(--ink)">${l[i].price.toFixed(2)}</text>`).join("")}</svg><button class="btn o" onclick="md.classList.remove('on')">Fechar</button>`;md.classList.add("on")}
+async function scan(){try{const v=$("#vd"),s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});v.srcObject=s;v.style.display="block";await v.play();
+if(!("BarcodeDetector" in window)){alert("Leitura automática não suportada aqui. Digite o código.");return}
+const d=new BarcodeDetector(),t=setInterval(async()=>{const r=await d.detect(v);if(r.length){clearInterval(t);s.getTracks().forEach(x=>x.stop());v.style.display="none";$("#cd").value=clean(r[0].rawValue);$("#cd").focus();lk()}},400)}catch(e){alert("Câmera indisponível neste ambiente. Digite o código.")}}
+function p2(){const t=S.cart.reduce((a,i)=>a+i.price*i.q,0);
+$("#p2").innerHTML=`<h1>Carrinho 🛒</h1><div class="c">${S.cart.map((i,n)=>`<div class="li">${im(i.photo)}<span>${i.name} <small>${i.brand} ${i.qty}${i.unit}</small></span><button class="chip" onclick="S.cart[${n}].q=Math.max(1,S.cart[${n}].q-1);save();p2()">−</button><b>${i.q}</b><button class="chip" onclick="S.cart[${n}].q++;save();p2()">+</button><small>${R(i.price*i.q)}</small></div>`).join("")||'<div class="mut">Carrinho vazio. Use “Salvar + carrinho” ao registrar.</div>'}</div>
+<div>Total: <span class="tot">${R(t)}</span></div><button class="btn o" onclick="S.cart=[];save();p2()">Esvaziar</button>`}
+function p3(){const hs=S.hist.filter(h=>(!F.mk||h.market===F.mk)&&(!F.q||h.name.toLowerCase().includes(F.q.toLowerCase()))&&(!F.mo||h.date.startsWith(F.mo))).reverse();
+const pr=prods().filter(p=>F.shelf==="Todos"||p.shelf===F.shelf),mks=[...new Set(S.hist.map(h=>h.market).filter(Boolean))];
+$("#p3").innerHTML=`<h1>Minha banca</h1><div class="c"><b>⚙️ Configurações</b>
+<input class="f" placeholder="Seu nome" value="${S.user}" onchange="S.user=this.value;save();p0()">
+<input class="f" placeholder="Compartilhar com (e-mail)" disabled title="Requer servidor">
+<div class="row"><select class="f" onchange="S.theme=this.value;save();top()"><option value="auto">Tema auto</option><option value="light" ${S.theme=="light"?"selected":""}>Claro</option><option value="dark" ${S.theme=="dark"?"selected":""}>Escuro</option></select>
+<select class="f" onchange="S.fs=+this.value;save();top()">${[14,16,19].map(x=>`<option value="${x}" ${S.fs==x?"selected":""}>Fonte ${x}</option>`).join("")}</select></div></div>
+<div class="c"><b>💾 Backup</b><div class="mut">${S.bk?"Último backup: "+fd(S.bk):"Você ainda não fez backup."}${S.hist.length&&(!S.bk||(new Date(T)-new Date(S.bk))>6048e5)?" ⚠️ Faça um backup.":""}</div><button class="btn g" onclick="bk()">Baixar backup</button><label class="btn o" style="display:block;text-align:center">Restaurar backup<input type="file" accept=".json,application/json" hidden onchange="rs(this)"></label></div>
+<div class="c"><b>📜 Histórico</b><div class="row"><input class="f" placeholder="Item" value="${F.q}" onchange="F.q=this.value;p3()"><input class="f" type="month" value="${F.mo}" onchange="F.mo=this.value;p3()"></div>
+<select class="f" onchange="F.mk=this.value;p3()"><option value="">Todos os mercados</option>${mks.map(m=>`<option ${F.mk==m?"selected":""}>${m}</option>`).join("")}</select>
+${hs.slice(0,30).map(h=>`<div class="li">${im(h.photo)}<span>${h.name} <small>${h.brand} ${h.qty}${h.unit}<br>${h.market||"?"} · ${h.date.split("-").reverse().join("/")}</small></span><b>${R(h.price)}${up(h)?`<br><small>${U(up(h))}</small>`:""}</b></div>`).join("")||'<div class="mut">Nenhum registro.</div>'}
+<button class="btn g" onclick="csv()">Copiar CSV</button><a class="btn o" style="display:block;text-align:center;text-decoration:none;margin-top:6px" target="_blank" href="https://docs.google.com/spreadsheets/create">Abrir Google Sheets e colar</a></div>
+<div class="c"><b>🥕 Meus produtos</b><div class="chips">${["Todos",...SH].map(s=>`<span class="chip ${F.shelf==s?"on":""}" onclick="F.shelf='${s}';p3()">${s}</span>`).join("")}</div>
+${pr.map(p=>`<div class="li">${im(p.photo)}<span>${p.name} <small>${p.brand} ${p.qty}${p.unit}</small></span><small>${p.shelf}</small></div>`).join("")||'<div class="mut">Nada nesta prateleira.</div>'}</div>`}
+function csv(){const c="data;mercado;cidade;codigo;item;marca;qtd;unidade;prateleira;preco\n"+S.hist.map(h=>[h.date,h.market,h.city,h.code,h.name,h.brand,h.qty,h.unit,h.shelf,h.price].join(";")).join("\n");
+navigator.clipboard.writeText(c).then(()=>alert("CSV copiado! Cole no Google Sheets."),()=>alert("Não foi possível copiar."))}
+(function(){try{const c=document.createElement("canvas");c.width=c.height=180;const x=c.getContext("2d");x.fillStyle="#F2B632";x.fillRect(0,0,180,180);for(let i=0;i<6;i++){x.fillStyle=i%2?"#fff7dc":"#D6402B";x.fillRect(i*30,0,30,48)}x.font="90px serif";x.textAlign="center";x.fillText("🧺",90,150);const u=c.toDataURL("image/png");$("#ic").href=u;$("#ic2").href=u}catch(e){}})();
+function bk(){const b=new Blob([JSON.stringify(S)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="suupaa-backup-"+T+".json";a.click();S.bk=T;save();p3()}
+function rs(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.hist))throw 0;if(!confirm("Restaurar "+d.hist.length+" registros? Isso substitui os dados atuais."))return;Object.assign(S,d);save();top();p0();p2();p3()}catch(e){alert("Arquivo de backup inválido.")}};r.readAsText(f);el.value=""}
+const tabs=[["🏠","Início"],["📷","Registrar"],["🛒","Carrinho"],["👤","Banca"]];
+$("#nv").innerHTML=tabs.map((t,i)=>`<button onclick="go(${i})"><i>${t[0]}</i>${t[1]}</button>`).join("");
+const tr=$("#tr");function go(i){tr.scrollTo({left:i*tr.clientWidth,behavior:"smooth"})}
+tr.onscroll=()=>{const i=Math.round(tr.scrollLeft/tr.clientWidth);document.querySelectorAll("#nv button").forEach((b,j)=>b.classList.toggle("on",i==j));document.querySelectorAll("section").forEach((s,j)=>s.classList.toggle("off",i!=j))};
+top();p0();p1();p2();p3();tr.onscroll();
+</script></body></html>
